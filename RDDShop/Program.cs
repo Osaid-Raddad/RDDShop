@@ -1,4 +1,8 @@
 
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
+using System.Globalization;
+
 namespace RDDShop
 {
     public class Program
@@ -6,9 +10,19 @@ namespace RDDShop
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            const string defaultCulture = "en";
+            var supportedCultures = new[]
+            {
+                new CultureInfo(defaultCulture),
+                new CultureInfo("ar")
+            };
+            builder.Services.Configure<RequestLocalizationOptions>(options => {
+                options.DefaultRequestCulture = new RequestCulture(defaultCulture);
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
             // Add services to the container.
-
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
@@ -26,7 +40,7 @@ namespace RDDShop
             }
 
             app.UseHttpsRedirection();
-
+            app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
             app.UseAuthorization();
 
 
