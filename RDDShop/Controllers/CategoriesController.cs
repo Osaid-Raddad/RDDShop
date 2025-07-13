@@ -28,7 +28,7 @@ namespace RDDShop.Controllers
         public IActionResult GetAll()
         {
             var categories = context.Categories.ToList().Adapt<List<CategoryResponseDTO>>();
-            return Ok(new { message = _localizer["All Admin Categories"], categories });
+            return Ok(new { message = _localizer["All Admin Categories"].Value, categories });
         }
         
         //Get for Costumer
@@ -36,7 +36,7 @@ namespace RDDShop.Controllers
         public IActionResult GetCustomerCategories()
         {
             var categories = context.Categories.Where(c=> c.Status == Status.Active).ToList().Adapt<List<CategoryResponseDTO>>();
-            return Ok(new { message = _localizer["All Customer Categories"], categories });
+            return Ok(new { message = _localizer["All Customer Categories"].Value, categories });
         }
         [HttpPost("Create")]
         public IActionResult Create(CategoryRequestDTO request)
@@ -45,7 +45,7 @@ namespace RDDShop.Controllers
             context.Add(categoryInDb);
             context.SaveChanges();
 
-            return Ok(new { message = _localizer["Category created successfully"]  });
+            return Ok(new { message = _localizer["Category created successfully"].Value  });
 
         }
 
@@ -55,10 +55,10 @@ namespace RDDShop.Controllers
             var category = context.Categories.FirstOrDefault(c => c.Id == id);
             if (category == null)
             {
-                return NotFound(new { message = _localizer["Category not found"] });
+                return NotFound(new { message = _localizer["Category not found"].Value });
             }
             var categoryResponse = category.Adapt<CategoryResponseDTO>();
-            return Ok(new { message = _localizer["Category found"], category = categoryResponse });
+            return Ok(new { message = _localizer["Category found"].Value, category = categoryResponse });
         }
 
         [HttpPatch("Update/{id}")]
@@ -67,11 +67,11 @@ namespace RDDShop.Controllers
             var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == id);
             if (categoryInDb == null)
             {
-                return NotFound(new { message = _localizer["Category not found"] });
+                return NotFound(new { message = _localizer["Category not found"].Value });
             }
             categoryInDb.Name = request.Name;
             context.SaveChanges();
-            return Ok(new { message = _localizer["Category Name updated successfully"] });
+            return Ok(new { message = _localizer["Category Name updated successfully"].Value });
         }
 
         [HttpPatch("ToggleStatus/{id}")]
@@ -80,11 +80,11 @@ namespace RDDShop.Controllers
             var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == id);
             if (categoryInDb == null)
             {
-                return NotFound(new { message = _localizer["Category not found"] });
+                return NotFound(new { message = _localizer["Category not found"].Value });
             }
             categoryInDb.Status = categoryInDb.Status == Status.Active ? Status.Inactive : Status.Active;
             context.SaveChanges();
-            return Ok(new { message = _localizer["Category Status updated successfully"] });
+            return Ok(new { message = _localizer["Category Status updated successfully"].Value });
         }
 
         [HttpDelete("Delete/{id}")]
@@ -93,11 +93,11 @@ namespace RDDShop.Controllers
             var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == id);
             if (categoryInDb == null)
             {
-                return NotFound(new { message =  _localizer["Category not found"] });
+                return NotFound(new { message =  _localizer["Category not found"].Value });
             }
             context.Categories.Remove(categoryInDb);
             context.SaveChanges();
-            return Ok(new { message = _localizer["Category deleted successfully"] });
+            return Ok(new { message = _localizer["Category deleted successfully"].Value });
         }
 
         [HttpDelete ("DeleteAll")]
@@ -106,11 +106,11 @@ namespace RDDShop.Controllers
             var categories = context.Categories.ToList();
             if (!categories.Any())
             {
-                return NotFound(new { message = _localizer["No categories found to delete"] });
+                return NotFound(new { message = _localizer["No categories found to delete"].Value });
             }
             context.Categories.RemoveRange(categories);
             context.SaveChanges();
-            return Ok(new { message = _localizer["All categories deleted successfully"] });
+            return Ok(new { message = _localizer["All categories deleted successfully"].Value });
         }
     }
 }
