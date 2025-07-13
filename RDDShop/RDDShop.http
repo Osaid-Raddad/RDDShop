@@ -1,0 +1,6 @@
+@RDDShop_HostAddress = http://localhost:5160
+
+GET {{RDDShop_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
