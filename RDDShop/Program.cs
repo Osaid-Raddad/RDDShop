@@ -20,6 +20,14 @@ namespace RDDShop
                 options.DefaultRequestCulture = new RequestCulture(defaultCulture);
                 options.SupportedCultures = supportedCultures;
                 options.SupportedUICultures = supportedCultures;
+                  options.RequestCultureProviders = new List<IRequestCultureProvider>
+                  {
+                      new QueryStringRequestCultureProvider()
+                      {
+                          QueryStringKey = "lang"
+                      },
+                  };
+
             });
             // Add services to the container.
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");

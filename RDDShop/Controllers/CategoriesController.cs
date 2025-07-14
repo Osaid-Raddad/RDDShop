@@ -1,11 +1,13 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using RDDShop.Data;
 using RDDShop.DTO.Request;
 using RDDShop.DTO.Response;
 using RDDShop.Models;
+using RDDShop.Models.Category;
 
 namespace RDDShop.Controllers
 {
@@ -25,21 +27,37 @@ namespace RDDShop.Controllers
 
         //Get for Admin
         [HttpGet("All")]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromQuery] string lang ="en")
         {
-            var categories = context.Categories.ToList().Adapt<List<CategoryResponseDTO>>();
-            return Ok(new { message = _localizer["All Admin Categories"].Value, categories });
+
+            var categories = context.Categories.Include(c => c.CategoryTranslations).ToList().Adapt<List<CategoryResponseDTO>>();
+
+            var result = categories.Select(c => new
+            {
+                Id = c.Id,
+                Name = c.CategoryTranslations.FirstOrDefault(ct => ct.Language == lang).Name
+            });
+
+
+            return Ok(new { message = _localizer["All Admin Categories"].Value, result });
         }
         
         //Get for Costumer
         [HttpGet("CategoryCustomer")]
-        public IActionResult GetCustomerCategories()
+        public IActionResult GetCustomerCategories([FromQuery] string lang = "en")
         {
-            var categories = context.Categories.Where(c=> c.Status == Status.Active).ToList().Adapt<List<CategoryResponseDTO>>();
-            return Ok(new { message = _localizer["All Customer Categories"].Value, categories });
+            var categories = context.Categories.Include(c => c.CategoryTranslations).ToList().Adapt<List<CategoryResponseDTO>>();
+
+            var result = categories.Select(c => new
+            {
+                Id = c.Id,
+                Name = c.CategoryTranslations.FirstOrDefault(ct => ct.Language == lang).Name
+            });
+            return Ok(new { message = _localizer["All Customer Categories"].Value, result });
         }
+
         [HttpPost("Create")]
-        public IActionResult Create(CategoryRequestDTO request)
+        public IActionResult Create([FromBody] CategoryRequestDTO request)
         {
             var categoryInDb = request.Adapt<Category>();
             context.Add(categoryInDb);
@@ -50,32 +68,44 @@ namespace RDDShop.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Details(int id)
+        public IActionResult Details([FromRoute] int id, [FromQuery] string lang = "en")
         {
-            var category = context.Categories.FirstOrDefault(c => c.Id == id);
+            var category = context.Categories
+                .Include(c => c.CategoryTranslations)
+                .FirstOrDefault(c => c.Id == id);
+
             if (category == null)
             {
                 return NotFound(new { message = _localizer["Category not found"].Value });
             }
-            var categoryResponse = category.Adapt<CategoryResponseDTO>();
-            return Ok(new { message = _localizer["Category found"].Value, category = categoryResponse });
+
+            var translation = category.CategoryTranslations.FirstOrDefault(ct => ct.Language == lang);
+
+            var response = new
+            {
+                Id = category.Id,
+                Name = translation?.Name ?? _localizer["No translation available"].Value
+            };
+
+            return Ok(new { message = _localizer["Category found"].Value, category = response });
         }
 
+
         [HttpPatch("Update/{id}")]
-        public IActionResult Update(int id, CategoryRequestDTO request)
+        public IActionResult Update( [FromRoute] int id, [FromBody] CategoryRequestDTO request )
         {
             var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == id);
             if (categoryInDb == null)
             {
                 return NotFound(new { message = _localizer["Category not found"].Value });
             }
-            categoryInDb.Name = request.Name;
+           // categoryInDb.Name = request.Name;
             context.SaveChanges();
             return Ok(new { message = _localizer["Category Name updated successfully"].Value });
         }
 
         [HttpPatch("ToggleStatus/{id}")]
-        public IActionResult ToggleStatus(int id)
+        public IActionResult ToggleStatus([FromRoute] int id)
         {
             var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == id);
             if (categoryInDb == null)
@@ -88,7 +118,7 @@ namespace RDDShop.Controllers
         }
 
         [HttpDelete("Delete/{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult Delete([FromRoute] int id)
         {
             var categoryInDb = context.Categories.FirstOrDefault(c => c.Id == id);
             if (categoryInDb == null)

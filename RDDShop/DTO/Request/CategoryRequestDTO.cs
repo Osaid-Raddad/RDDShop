@@ -1,8 +1,12 @@
-﻿namespace RDDShop.DTO.Request
+﻿using RDDShop.Models;
+
+namespace RDDShop.DTO.Request
+
 {
     public class CategoryRequestDTO
     {
-        public string Name { get; set; }
-       
+        public Status Status { get; set; } = Status.Active;
+        public List<CategoryTranslationRequest> CategoryTranslations { get; set; } 
+
     }
 }
